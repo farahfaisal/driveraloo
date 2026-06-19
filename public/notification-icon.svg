@@ -1,0 +1,26 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#EAB308" stroke="#CA8A04" stroke-width="4"/>
+  
+  <!-- Truck icon -->
+  <g transform="translate(16, 20)">
+    <!-- Truck body -->
+    <rect x="0" y="8" width="20" height="12" fill="white" rx="2"/>
+    <!-- Truck cab -->
+    <rect x="20" y="4" width="12" height="16" fill="white" rx="2"/>
+    
+    <!-- Wheels -->
+    <circle cx="6" cy="24" r="4" fill="#374151"/>
+    <circle cx="26" cy="24" r="4" fill="#374151"/>
+    <circle cx="6" cy="24" r="2" fill="white"/>
+    <circle cx="26" cy="24" r="2" fill="white"/>
+    
+    <!-- Details -->
+    <rect x="22" y="8" width="6" height="4" fill="#EAB308" rx="1"/>
+    <rect x="2" y="12" width="16" height="2" fill="#EAB308"/>
+  </g>
+  
+  <!-- Notification badge -->
+  <circle cx="48" cy="16" r="8" fill="#DC2626"/>
+  <text x="48" y="20" text-anchor="middle" fill="white" font-family="Arial" font-size="10" font-weight="bold">!</text>
+</svg>

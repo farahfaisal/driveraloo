@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node_modules/.bin/tsc*)",
+      "Bash(node_modules/.bin/vite*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /tmp/cc-agent/60596051/project && node_modules/.bin/tsc --noEmit 2>&1 && node_modules/.bin/vite build 2>&1 || echo '{\"continue\": false, \"stopReason\": \"Build failed — fix errors before stopping.\"}'",
+            "timeout": 120,
+            "statusMessage": "Building project..."
+          }
+        ]
+      }
+    ]
+  }
+}

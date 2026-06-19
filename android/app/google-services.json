@@ -1,0 +1,86 @@
+{
+  "project_info": {
+    "project_number": "366420321587",
+    "project_id": "alo-jetak",
+    "storage_bucket": "alo-jetak.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366420321587:android:2f3a35998ec649a2844a46",
+        "android_client_info": {
+          "package_name": "com.aljetak.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxEadOJo2iEGLpIfbDJJHX4rJYtt3r894"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366420321587:android:6bb6ac639169de3c844a46",
+        "android_client_info": {
+          "package_name": "com.alojetak.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxEadOJo2iEGLpIfbDJJHX4rJYtt3r894"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366420321587:android:fd7576de91f029cd844a46",
+        "android_client_info": {
+          "package_name": "com.driveralo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxEadOJo2iEGLpIfbDJJHX4rJYtt3r894"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366420321587:android:3ad312b9edaf546f844a46",
+        "android_client_info": {
+          "package_name": "com.vendoralojetak.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxEadOJo2iEGLpIfbDJJHX4rJYtt3r894"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

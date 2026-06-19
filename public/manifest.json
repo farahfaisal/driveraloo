@@ -1,0 +1,68 @@
+{
+  "name": "الو جيتك - تطبيق الكابتن",
+  "short_name": "الو جيتك",
+  "description": "تطبيق توصيل الطلبات للكباتن",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "ar",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/app-icon-192.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "الطلبات",
+      "short_name": "الطلبات",
+      "description": "عرض الطلبات المتاحة",
+      "url": "/orders",
+      "icons": [
+        {
+          "src": "/notification-icon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "رحلاتي",
+      "short_name": "رحلاتي",
+      "description": "عرض رحلاتي الحالية",
+      "url": "/my-trips",
+      "icons": [
+        {
+          "src": "/notification-icon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "المحفظة",
+      "short_name": "المحفظة",
+      "description": "عرض محفظتي",
+      "url": "/wallet",
+      "icons": [
+        {
+          "src": "/notification-icon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
