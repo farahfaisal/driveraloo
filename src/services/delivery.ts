@@ -1074,28 +1074,17 @@ export async function getDriverDeliveries(driverId?: string): Promise<Delivery[]
       let ordersMap: Map<string, any> = new Map();
 
       if (orderIds.length > 0) {
-        // Round 2: orders and order_items in parallel
-        const [
-          { data: ordersData, error: ordersError },
-          { data: orderItems, error: itemsError },
-        ] = await Promise.all([
-          supabase
-            .from('orders')
-            .select('id, customer_name, customer_phone, address, service_area, city, order_type, total, subtotal, coupon_discount, points_discount, vendor_discount_amount, vendor_discount_percentage, delivery_fee, payment_method, created_at, preparation_time, actual_preparation_time, preparation_start, preparation_start_time, preparation_end, delivery_instructions, order_group_id')
-            .in('id', orderIds),
-          supabase
-            .from('order_items')
-            .select('order_id, product_name, quantity, price, variant_name, notes, addons_data, vendor_id, vendor_name')
-            .in('order_id', orderIds),
+        // Round 2: orders and order_items in parallel (batched to avoid PostgREST URL limit)
+        const [ordersData, orderItems] = await Promise.all([
+          fetchInBatches('orders', 'id', orderIds, 'id, customer_name, customer_phone, address, service_area, city, order_type, total, subtotal, coupon_discount, points_discount, vendor_discount_amount, vendor_discount_percentage, delivery_fee, payment_method, created_at, preparation_time, actual_preparation_time, preparation_start, preparation_start_time, preparation_end, delivery_instructions, order_group_id'),
+          fetchInBatches('order_items', 'order_id', orderIds, 'order_id, product_name, quantity, price, variant_name, notes, addons_data, vendor_id, vendor_name'),
         ]);
 
-        if (!ordersError && ordersData) {
-          ordersData.forEach(order => { ordersMap.set(order.id, order); });
-        } else if (ordersError) {
-          console.error('Error fetching orders data:', ordersError);
+        if (ordersData) {
+          ordersData.forEach((order: any) => { ordersMap.set(order.id, order); });
         }
 
-        if (!itemsError && orderItems) {
+        if (orderItems) {
           const itemsByOrder = new Map<string, any[]>();
           orderItems.forEach(item => {
             if (!itemsByOrder.has(item.order_id)) itemsByOrder.set(item.order_id, []);
@@ -1119,8 +1108,6 @@ export async function getDriverDeliveries(driverId?: string): Promise<Delivery[]
             const order = ordersMap.get(orderId);
             if (order) order.items_data = items;
           });
-        } else if (itemsError) {
-          console.error('Error fetching order items:', itemsError);
         }
       }
 
