@@ -712,11 +712,10 @@ export default function MyTrips() {
                       />
                     )}
 
-                    {/* Discount & Payment Info */}
+                    {/* Discount Info */}
                     {((trip.coupon_discount != null && trip.coupon_discount > 0) ||
                       (trip.points_discount != null && trip.points_discount > 0) ||
-                      (trip.vendor_discount_amount != null && trip.vendor_discount_amount > 0) ||
-                      (trip.payment_method && trip.payment_method !== 'cash')) && (
+                      (trip.vendor_discount_amount != null && trip.vendor_discount_amount > 0)) && (
                       <div className="space-y-1">
                         {trip.coupon_discount != null && trip.coupon_discount > 0 && (
                           <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
@@ -736,16 +735,6 @@ export default function MyTrips() {
                             <span className="text-xs font-bold text-green-700">خصم المتجر{trip.vendor_discount_percentage != null && trip.vendor_discount_percentage > 0 ? ` (${trip.vendor_discount_percentage}%)` : ''}</span>
                           </div>
                         )}
-                        {trip.payment_method && trip.payment_method !== 'cash' && (
-                          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                            <span className="text-xs font-bold text-blue-700">
-                              {trip.payment_method === 'wallet' ? 'محفظة' :
-                               trip.payment_method === 'card' ? 'بطاقة' :
-                               trip.payment_method}
-                            </span>
-                            <span className="text-xs font-bold text-blue-700">طريقة الدفع</span>
-                          </div>
-                        )}
                       </div>
                     )}
 
@@ -756,6 +745,27 @@ export default function MyTrips() {
                       </div>
                       <div className="flex items-center gap-1 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-gray-200">
                         <span className="text-xs font-semibold text-gray-900">{formatOrderType(trip.order_type)}</span>
+                      </div>
+                      {/* Payment method badge — always visible */}
+                      <div className={`flex items-center gap-1 px-2 py-1 rounded-lg border ${
+                        trip.payment_method === 'wallet' ? 'bg-blue-100 border-blue-300' :
+                        trip.payment_method === 'card' ? 'bg-purple-100 border-purple-300' :
+                        'bg-green-100 border-green-300'
+                      }`}>
+                        <DollarSign className={`w-3 h-3 ${
+                          trip.payment_method === 'wallet' ? 'text-blue-700' :
+                          trip.payment_method === 'card' ? 'text-purple-700' :
+                          'text-green-700'
+                        }`} />
+                        <span className={`text-xs font-bold ${
+                          trip.payment_method === 'wallet' ? 'text-blue-900' :
+                          trip.payment_method === 'card' ? 'text-purple-900' :
+                          'text-green-900'
+                        }`}>
+                          {trip.payment_method === 'wallet' ? 'محفظة' :
+                           trip.payment_method === 'card' ? 'بطاقة' :
+                           'كاش'}
+                        </span>
                       </div>
                       <div className={`flex items-center gap-1 backdrop-blur-sm px-2 py-1 rounded-lg border ${
                         trip.status === 'assigned' ? 'bg-yellow-100 border-yellow-300' :
@@ -1013,6 +1023,25 @@ export default function MyTrips() {
                             <div className="flex justify-between items-center pt-1 border-t border-gray-300">
                               <span className="text-base font-bold text-gray-900">₪{(subtotal - discount + (trip.delivery_fee || 0)).toFixed(2)}</span>
                               <span className="text-sm font-bold text-gray-800">المجموع الكلي</span>
+                            </div>
+                            {/* Payment method */}
+                            <div className={`flex justify-between items-center pt-1.5 border-t ${
+                              trip.payment_method === 'wallet' ? 'border-blue-200' :
+                              trip.payment_method === 'card' ? 'border-purple-200' :
+                              'border-green-200'
+                            }`}>
+                              <span className={`text-sm font-bold ${
+                                trip.payment_method === 'wallet' ? 'text-blue-700' :
+                                trip.payment_method === 'card' ? 'text-purple-700' :
+                                'text-green-700'
+                              }`}>
+                                {trip.payment_method === 'wallet'
+                                  ? `محفظة — ₪${(subtotal - discount + (trip.delivery_fee || 0)).toFixed(2)}`
+                                  : trip.payment_method === 'card'
+                                  ? 'بطاقة بنكية'
+                                  : 'دفع كاش'}
+                              </span>
+                              <span className="text-xs font-bold text-gray-600">طريقة الدفع</span>
                             </div>
                           </div>
                         </div>
