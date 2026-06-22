@@ -999,17 +999,37 @@ export default function Orders() {
                       <div className="flex items-center gap-1 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-gray-200">
                         <span className="text-xs font-semibold text-gray-900">{formatOrderType(delivery.order_type)}</span>
                       </div>
+                      {/* Payment method badge — always visible */}
+                      <div className={`flex items-center gap-1 px-2 py-1 rounded-lg border ${
+                        delivery.payment_method === 'wallet' ? 'bg-blue-100 border-blue-300' :
+                        delivery.payment_method === 'card' ? 'bg-purple-100 border-purple-300' :
+                        'bg-green-100 border-green-300'
+                      }`}>
+                        <DollarSign className={`w-3 h-3 ${
+                          delivery.payment_method === 'wallet' ? 'text-blue-700' :
+                          delivery.payment_method === 'card' ? 'text-purple-700' :
+                          'text-green-700'
+                        }`} />
+                        <span className={`text-xs font-bold ${
+                          delivery.payment_method === 'wallet' ? 'text-blue-900' :
+                          delivery.payment_method === 'card' ? 'text-purple-900' :
+                          'text-green-900'
+                        }`}>
+                          {delivery.payment_method === 'wallet' ? 'محفظة' :
+                           delivery.payment_method === 'card' ? 'بطاقة' :
+                           'كاش'}
+                        </span>
+                      </div>
                       <div className={`flex items-center gap-1 ${getIconBgClass()} backdrop-blur-sm px-2 py-1 rounded-lg border ${delivery.status === 'pending' || delivery.status === 'preparing' ? 'border-rose-300' : delivery.status === 'delivering' ? 'border-yellow-300' : 'border-green-300'}`}>
                         <DollarSign className={`w-3 h-3 ${getIconColorClass()}`} />
                         <span className={`text-xs font-bold ${delivery.status === 'pending' || delivery.status === 'preparing' ? 'text-rose-900' : delivery.status === 'delivering' ? 'text-yellow-900' : 'text-green-900'}`}>{formatCurrency(delivery.delivery_fee)}</span>
                       </div>
                     </div>
 
-                    {/* Discount & Payment Info */}
+                    {/* Discount Info */}
                     {((delivery.coupon_discount != null && delivery.coupon_discount > 0) ||
                       (delivery.points_discount != null && delivery.points_discount > 0) ||
-                      (delivery.vendor_discount_amount != null && delivery.vendor_discount_amount > 0) ||
-                      (delivery.payment_method && delivery.payment_method !== 'cash')) && (
+                      (delivery.vendor_discount_amount != null && delivery.vendor_discount_amount > 0)) && (
                       <div className="space-y-1">
                         {delivery.coupon_discount != null && delivery.coupon_discount > 0 && (
                           <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
@@ -1027,16 +1047,6 @@ export default function Orders() {
                           <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-1.5">
                             <span className="text-xs font-bold text-green-700">- {formatCurrency(delivery.vendor_discount_amount)}</span>
                             <span className="text-xs font-bold text-green-700">خصم المتجر{delivery.vendor_discount_percentage != null && delivery.vendor_discount_percentage > 0 ? ` (${delivery.vendor_discount_percentage}%)` : ''}</span>
-                          </div>
-                        )}
-                        {delivery.payment_method && delivery.payment_method !== 'cash' && (
-                          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                            <span className="text-xs font-bold text-blue-700">
-                              {delivery.payment_method === 'wallet' ? 'محفظة' :
-                               delivery.payment_method === 'card' ? 'بطاقة' :
-                               delivery.payment_method}
-                            </span>
-                            <span className="text-xs font-bold text-blue-700">طريقة الدفع</span>
                           </div>
                         )}
                       </div>
@@ -1273,6 +1283,25 @@ export default function Orders() {
                               <div className="flex justify-between items-center pt-1.5 border-t border-gray-200">
                                 <span className="text-sm font-bold text-gray-900">المجموع الكلي</span>
                                 <span className="text-base font-bold text-red-600">₪{delivery.total_amount.toFixed(2)}</span>
+                              </div>
+                              {/* Payment method */}
+                              <div className={`flex justify-between items-center pt-1.5 border-t ${
+                                delivery.payment_method === 'wallet' ? 'border-blue-200' :
+                                delivery.payment_method === 'card' ? 'border-purple-200' :
+                                'border-green-200'
+                              }`}>
+                                <span className={`text-sm font-bold ${
+                                  delivery.payment_method === 'wallet' ? 'text-blue-700' :
+                                  delivery.payment_method === 'card' ? 'text-purple-700' :
+                                  'text-green-700'
+                                }`}>
+                                  {delivery.payment_method === 'wallet'
+                                    ? `محفظة — ₪${delivery.total_amount.toFixed(2)}`
+                                    : delivery.payment_method === 'card'
+                                    ? 'بطاقة بنكية'
+                                    : 'دفع كاش'}
+                                </span>
+                                <span className="text-xs font-bold text-gray-600">طريقة الدفع</span>
                               </div>
                             </div>
 
