@@ -39,22 +39,44 @@ export function usePushTokenRegistration() {
     registerToken();
   }, [isAuthenticated]);
 
-  const registerToken = async () => {
+  const registerToken = async (attempt = 1): Promise<boolean> => {
+    const MAX_ATTEMPTS = 3;
     try {
       const permResult = await PushNotifications.requestPermissions();
       if (permResult.receive !== 'granted') {
-        return;
+        console.warn('[FCM] Push permission not granted');
+        return false;
       }
 
-      await PushNotifications.register();
+      // Attach listeners BEFORE calling register() — on Android a cached
+      // FCM token can be returned synchronously, so if the listener is
+      // added after register() the event is missed and no token is saved.
+      const success = await new Promise<boolean>((resolve) => {
+        let settled = false;
+        let regListener: { remove: () => void } | undefined;
+        let errListener: { remove: () => void } | undefined;
 
-      await new Promise<void>((resolve) => {
+        const cleanup = () => {
+          regListener?.remove();
+          errListener?.remove();
+        };
+
+        const finish = (result: boolean) => {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timeout);
+            cleanup();
+            resolve(result);
+          }
+        };
+
         const timeout = setTimeout(() => {
-          resolve();
+          console.warn(`[FCM] Token registration timed out (attempt ${attempt})`);
+          finish(false);
         }, 15000);
 
-        PushNotifications.addListener('registration', async (token) => {
-          clearTimeout(timeout);
+        regListener = await PushNotifications.addListener('registration', async (token) => {
+          if (settled) return;
           hasRegistered.current = true;
 
           const tokenValue = token.value;
@@ -62,28 +84,43 @@ export function usePushTokenRegistration() {
 
           try {
             const session = await storage.get('driver_session');
-            if (!session) { resolve(); return; }
+            if (!session) { finish(true); return; }
 
             const userData = JSON.parse(session);
             const driverId = userData?.driver_profile?.id || userData?.driver_id || userData?.id;
-            if (!driverId) { resolve(); return; }
+            if (!driverId) { finish(true); return; }
 
             await saveTokenToDb(tokenValue, driverId);
           } catch (err) {
             console.error('[FCM] Error saving token:', err);
           }
 
-          resolve();
+          finish(true);
         });
 
-        PushNotifications.addListener('registrationError', (err) => {
-          clearTimeout(timeout);
-          console.error('[FCM] Registration error:', err.error);
-          resolve();
+        errListener = await PushNotifications.addListener('registrationError', (err) => {
+          console.error(`[FCM] Registration error (attempt ${attempt}):`, err.error);
+          finish(false);
+        });
+
+        // Now that listeners are in place, kick off registration.
+        PushNotifications.register().catch((e) => {
+          console.error(`[FCM] register() rejected (attempt ${attempt}):`, e);
+          finish(false);
         });
       });
+
+      if (!success && attempt < MAX_ATTEMPTS) {
+        const delay = attempt * 3000;
+        console.warn(`[FCM] Retrying registration in ${delay}ms (attempt ${attempt + 1}/${MAX_ATTEMPTS})`);
+        await new Promise(r => setTimeout(r, delay));
+        return registerToken(attempt + 1);
+      }
+
+      return success;
     } catch (err) {
       console.error('[FCM] Unexpected error during token registration:', err);
+      return false;
     }
   };
 }
