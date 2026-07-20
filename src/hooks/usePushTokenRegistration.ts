@@ -48,67 +48,70 @@ export function usePushTokenRegistration() {
         return false;
       }
 
-      // Attach listeners BEFORE calling register() — on Android a cached
-      // FCM token can be returned synchronously, so if the listener is
-      // added after register() the event is missed and no token is saved.
-      const success = await new Promise<boolean>((resolve) => {
-        let settled = false;
-        let regListener: { remove: () => void } | undefined;
-        let errListener: { remove: () => void } | undefined;
+      // Deferred promise so we can `await` addListener() in the async body
+      // while still resolving from inside the listeners.
+      let resolveResult!: (v: boolean) => void;
+      const resultPromise = new Promise<boolean>((resolve) => { resolveResult = resolve; });
 
-        const cleanup = () => {
-          regListener?.remove();
-          errListener?.remove();
-        };
+      let settled = false;
+      let regListener: { remove: () => void } | undefined;
+      let errListener: { remove: () => void } | undefined;
 
-        const finish = (result: boolean) => {
-          if (!settled) {
-            settled = true;
-            clearTimeout(timeout);
-            cleanup();
-            resolve(result);
-          }
-        };
+      const timeoutId = setTimeout(() => {
+        console.warn(`[FCM] Token registration timed out (attempt ${attempt})`);
+        finish(false);
+      }, 15000);
 
-        const timeout = setTimeout(() => {
-          console.warn(`[FCM] Token registration timed out (attempt ${attempt})`);
-          finish(false);
-        }, 15000);
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        regListener?.remove();
+        errListener?.remove();
+      };
 
-        regListener = await PushNotifications.addListener('registration', async (token) => {
-          if (settled) return;
-          hasRegistered.current = true;
+      const finish = (result: boolean) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolveResult(result);
+      };
 
-          const tokenValue = token.value;
-          await storage.set('push_token', tokenValue);
+      // Attach listeners BEFORE register() — on Android a cached FCM token
+      // can fire synchronously, so a listener added after register() misses it.
+      regListener = await PushNotifications.addListener('registration', async (token) => {
+        if (settled) return;
+        hasRegistered.current = true;
 
-          try {
-            const session = await storage.get('driver_session');
-            if (!session) { finish(true); return; }
+        const tokenValue = token.value;
+        await storage.set('push_token', tokenValue);
 
-            const userData = JSON.parse(session);
-            const driverId = userData?.driver_profile?.id || userData?.driver_id || userData?.id;
-            if (!driverId) { finish(true); return; }
+        try {
+          const session = await storage.get('driver_session');
+          if (!session) { finish(true); return; }
 
-            await saveTokenToDb(tokenValue, driverId);
-          } catch (err) {
-            console.error('[FCM] Error saving token:', err);
-          }
+          const userData = JSON.parse(session);
+          const driverId = userData?.driver_profile?.id || userData?.driver_id || userData?.id;
+          if (!driverId) { finish(true); return; }
 
-          finish(true);
-        });
+          await saveTokenToDb(tokenValue, driverId);
+        } catch (err) {
+          console.error('[FCM] Error saving token:', err);
+        }
 
-        errListener = await PushNotifications.addListener('registrationError', (err) => {
-          console.error(`[FCM] Registration error (attempt ${attempt}):`, err.error);
-          finish(false);
-        });
-
-        // Now that listeners are in place, kick off registration.
-        PushNotifications.register().catch((e) => {
-          console.error(`[FCM] register() rejected (attempt ${attempt}):`, e);
-          finish(false);
-        });
+        finish(true);
       });
+
+      errListener = await PushNotifications.addListener('registrationError', (err) => {
+        console.error(`[FCM] Registration error (attempt ${attempt}):`, err.error);
+        finish(false);
+      });
+
+      // Now that listeners are in place, kick off registration.
+      PushNotifications.register().catch((e) => {
+        console.error(`[FCM] register() rejected (attempt ${attempt}):`, e);
+        finish(false);
+      });
+
+      const success = await resultPromise;
 
       if (!success && attempt < MAX_ATTEMPTS) {
         const delay = attempt * 3000;
