@@ -1,6 +1,23 @@
 import { supabase } from './auth';
 import { storage } from '../utils/storage';
 
+// Batch large .in() queries (PostgREST URL limit ~8KB; 100 UUIDs ≈ 3.6KB is safe)
+async function fetchInBatches(
+  table: string,
+  column: string,
+  ids: string[],
+  selectCols: string
+): Promise<any[]> {
+  if (ids.length === 0) return [];
+  const CHUNK = 100;
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
+  const results = await Promise.all(
+    chunks.map(chunk => supabase.from(table).select(selectCols).in(column, chunk))
+  );
+  return results.flatMap(r => r.data || []);
+}
+
 export interface OrderItem {
   id?: string;
   product_id?: string;
@@ -447,22 +464,6 @@ export async function getDriverTrips(): Promise<DriverTrip[]> {
     const orderIds = trips.filter(t => t.order_id).map(t => t.order_id);
     const captainRequestIds = trips.filter(t => t.captain_request_id).map(t => t.captain_request_id);
     const parcelOrderIds = trips.filter(t => t.parcel_order_id).map(t => t.parcel_order_id);
-
-    // Helper to batch large .in() queries (PostgREST URL limit ~8KB, 100 UUIDs ≈ 3.6KB safe)
-    const fetchInBatches = async (
-      table: string,
-      column: string,
-      ids: string[],
-      selectCols: string
-    ): Promise<any[]> => {
-      const CHUNK = 100;
-      const chunks: string[][] = [];
-      for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
-      const results = await Promise.all(
-        chunks.map(chunk => supabase.from(table).select(selectCols).in(column, chunk))
-      );
-      return results.flatMap(r => r.data || []);
-    };
 
     // Fetch order details separately
     let orders: any[] = [];
